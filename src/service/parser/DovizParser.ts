@@ -5,31 +5,35 @@ import ICurrency from "../../models/ICurrency";
 import ICurrencyParser from "../../interfaces/ICurrencyParser";
 
 @Service({ transient: true })
-class BloombergParser implements ICurrencyParser {
+class DovizParser implements ICurrencyParser {
   extractData(
     fetchDom: (url: string) => Promise<HTMLElement> | null
   ): Promise<IProvider> | undefined {
     try {
-      return fetchDom(`https://www.bloomberght.com/doviz`)?.then(
+      return fetchDom(`https://kur.doviz.com/`)?.then(
         (parsedData: HTMLElement) => {
           const convertedData: ICurrency[] = [];
           parsedData
-            .querySelector(".marketsData")
+            .querySelector("#currencies")
             .querySelector("tbody")
             .querySelectorAll("tr")
             .map((row) => {
-              var tableData = row.querySelectorAll("td");
-              var currency: ICurrency = {
-                type: tableData[1].querySelector("a").hasAttribute("title")
-                  ? tableData[1].querySelector("a").getAttribute("title") || ""
-                  : "",
-                buy: tableData[2].innerText,
-                sell: tableData[3].innerText,
-              };
-              convertedData.push(currency);
+              if (row.hasAttribute("data-table-subpage-key")) {
+                var tableData = row.querySelectorAll("td");
+                var currency: ICurrency = {
+                  type:
+                    tableData[0]
+                      .querySelector("a")
+                      .innerText.toString()
+                      .trim() ?? "",
+                  buy: tableData[1].innerText,
+                  sell: tableData[2].innerText,
+                };
+                convertedData.push(currency);
+              }
             });
           var preparedData: IProvider = {
-            providerName: "bloomberght.com",
+            providerName: "kur.doviz.com",
             currencies: convertedData,
           };
           return preparedData;
@@ -41,4 +45,4 @@ class BloombergParser implements ICurrencyParser {
   }
 }
 
-export default BloombergParser;
+export default DovizParser;

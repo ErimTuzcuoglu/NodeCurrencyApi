@@ -5,31 +5,30 @@ import ICurrency from "../../models/ICurrency";
 import ICurrencyParser from "../../interfaces/ICurrencyParser";
 
 @Service({ transient: true })
-class BloombergParser implements ICurrencyParser {
+class CanliDovizParser implements ICurrencyParser {
   extractData(
     fetchDom: (url: string) => Promise<HTMLElement> | null
   ): Promise<IProvider> | undefined {
     try {
-      return fetchDom(`https://www.bloomberght.com/doviz`)?.then(
+      return fetchDom(`https://canlidoviz.co/doviz-kurlari.php`)?.then(
         (parsedData: HTMLElement) => {
           const convertedData: ICurrency[] = [];
           parsedData
-            .querySelector(".marketsData")
+            .querySelector(".table.table-hover")
             .querySelector("tbody")
             .querySelectorAll("tr")
             .map((row) => {
               var tableData = row.querySelectorAll("td");
+              console.log(tableData.toString() + "/n");
               var currency: ICurrency = {
-                type: tableData[1].querySelector("a").hasAttribute("title")
-                  ? tableData[1].querySelector("a").getAttribute("title") || ""
-                  : "",
-                buy: tableData[2].innerText,
-                sell: tableData[3].innerText,
+                type: tableData[1].innerText,
+                buy: tableData[6].innerText,
+                sell: tableData[7].innerText,
               };
               convertedData.push(currency);
             });
           var preparedData: IProvider = {
-            providerName: "bloomberght.com",
+            providerName: "Bloomberg",
             currencies: convertedData,
           };
           return preparedData;
@@ -41,4 +40,4 @@ class BloombergParser implements ICurrencyParser {
   }
 }
 
-export default BloombergParser;
+export default CanliDovizParser;

@@ -5,31 +5,29 @@ import ICurrency from "../../models/ICurrency";
 import ICurrencyParser from "../../interfaces/ICurrencyParser";
 
 @Service({ transient: true })
-class BloombergParser implements ICurrencyParser {
+class HurriyetParser implements ICurrencyParser {
   extractData(
     fetchDom: (url: string) => Promise<HTMLElement> | null
   ): Promise<IProvider> | undefined {
     try {
-      return fetchDom(`https://www.bloomberght.com/doviz`)?.then(
+      return fetchDom(`https://bigpara.hurriyet.com.tr/doviz/`)?.then(
         (parsedData: HTMLElement) => {
           const convertedData: ICurrency[] = [];
           parsedData
-            .querySelector(".marketsData")
-            .querySelector("tbody")
-            .querySelectorAll("tr")
+            .querySelector(".tableBox.srbstPysDvz")
+            .querySelector(".tBody")
+            .querySelectorAll("ul")
             .map((row) => {
-              var tableData = row.querySelectorAll("td");
+              var tableData = row.querySelectorAll("li");
               var currency: ICurrency = {
-                type: tableData[1].querySelector("a").hasAttribute("title")
-                  ? tableData[1].querySelector("a").getAttribute("title") || ""
-                  : "",
+                type: tableData[0].querySelector("a").innerText ?? "",
                 buy: tableData[2].innerText,
                 sell: tableData[3].innerText,
               };
               convertedData.push(currency);
             });
           var preparedData: IProvider = {
-            providerName: "bloomberght.com",
+            providerName: "bigpara.hurriyet.com",
             currencies: convertedData,
           };
           return preparedData;
@@ -41,4 +39,4 @@ class BloombergParser implements ICurrencyParser {
   }
 }
 
-export default BloombergParser;
+export default HurriyetParser;
